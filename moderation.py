@@ -1,5 +1,7 @@
 from telethon import TelegramClient, events, sync
 import configparser
+from sqlHelper import *
+from shorthands import *
 
 
 class ModerationBot:
@@ -10,18 +12,30 @@ class ModerationBot:
         api_hash = config['Moderation']['api_hash']
         bot_token = config['Moderation']['bot_token']
 
-        client = TelegramClient('session_name', api_id, api_hash)
-        client.start(bot_token=bot_token)
+        self.ModerationDB = sqlHelper('moderators.db', 'moderators')
 
-        @client.on(events.NewMessage(pattern='0'))
+        client = TelegramClient('session_name', api_id, api_hash)
+        client.start()
+
+        @client.on(events.NewMessage(pattern='/start'))
         async def handler(event):
-            await event.respond('Hey!')
+            await event.respond('Привет!')
+            await event.respond('Проверяю твой статус')
+            sender = await event.get_sender()
+            sender_ID = sender.id
+            sender_status = self.checkUserStatus(sender_ID)
+            await event.respond(f'Ваш статус ```{statusEncoding[sender_status]}```')
 
         client.run_until_disconnected()
 
-    def checkTheUserStatus(self):
+    def checkUserStatus(self, telegramID):
         # Возвращает статус пользователя. Супер-админ/Админ/Организация/Обычный пользователь
-        pass
+        answer = self.ModerationDB.getUserByTelegramID(telegramID)
+        if answer:
+            status = answer[ModerationDataBaseStructure['status']]
+        else:
+            status = 'ou'
+        return status
 
     def getEventsForConfirmation(self):
         # Возвращает список событий, предложенныйх пользователями.
