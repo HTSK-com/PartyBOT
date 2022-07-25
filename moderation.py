@@ -25,6 +25,22 @@ class ModerationBot:
             sender_ID = sender.id
             sender_status = self.checkUserStatus(sender_ID)
             await event.respond(f'Ваш статус ```{statusEncoding[sender_status]}```')
+            await event.respond('Вам доступны следующие функции:\n' + "\n".join(permissionsByStatus[sender_status]))
+
+        # Функция публикации нового события
+        @client.on(events.NewMessage(pattern='/publishEvent'))
+        async def publishEvent(event):
+            permission = ['sa', 'a', 'o']
+
+            sender = await event.get_sender()
+            sender_ID = sender.id
+            sender_status = self.checkUserStatus(sender_ID)
+
+            if sender_status not in permission:
+                await event.respond('Неподходящий уровень доступа')
+
+            # Добавить изменения step в базе данных, что бы показать, что пользователь перешел на следующий шаг выполнения
+            # команды, а именно на отправку фото и текста
 
         client.run_until_disconnected()
 

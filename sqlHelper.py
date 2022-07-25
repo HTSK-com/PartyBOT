@@ -11,3 +11,10 @@ class sqlHelper:
         self.cur.execute(f"SELECT * FROM {self.table} WHERE telegramID={telegramID};")
         one_result = self.cur.fetchone()
         return one_result
+
+    def editDataBase(self, telegramID, param, value):  # Эту функцию необходимо проверить
+        self.cur.execute(f"INSERT INTO {self.table} VALUES({param}) WHERE telegramID={telegramID};", value)
+        self.con.commit()
+
+
+

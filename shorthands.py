@@ -13,3 +13,9 @@ ModerationDataBaseStructure = {  # очередность колонок в mode
     'organisation': 2,
     'tgID': 3
 }
+
+permissionsByStatus = {
+    'sa': ['/addNewAdmin', '/publishEvent', '/checkEvents'],
+    'a': ['/publishEvent', '/checkEvents'],
+    'o': ['/publishEvent']
+}
