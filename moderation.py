@@ -1,7 +1,7 @@
 from telethon import TelegramClient, events, sync
 import configparser
 from sqlHelper import *
-from shorthands import *
+from shorthands_moderation import *
 
 
 class ModerationBot:
@@ -39,8 +39,28 @@ class ModerationBot:
             if sender_status not in permission:
                 await event.respond('Неподходящий уровень доступа')
 
-            # Добавить изменения step в базе данных, что бы показать, что пользователь перешел на следующий шаг выполнения
-            # команды, а именно на отправку фото и текста
+            # Добавить изменения step в базе данных, что бы показать, что пользователь перешел
+            # на следующий шаг выполнения команды, а именно на отправку фото и текста
+
+        @client.on(events.NewMessage())
+        async def unrecognisedMessage(event):
+            sender = await event.get_sender()
+            sender_ID = sender.id
+            step = self.getUserStep(sender_ID)
+            if not step:
+                await event.respong('Ошибка')
+                return
+
+            scenario, step = str(step).split()
+
+            if scenario == 'addNewAdmin':
+                pass
+            elif scenario == 'publishEvent':
+                pass
+            elif scenario == 'checkEvents':
+                pass
+
+
 
         client.run_until_disconnected()
 
@@ -52,6 +72,13 @@ class ModerationBot:
         else:
             status = 'ou'
         return status
+
+    def getUserStep(self, telegramID):
+        # Возвращает этап на котором находится пользователь
+        answer = self.ModerationDB.getUserByTelegramID(telegramID)
+        if answer:
+            return answer[ModerationDataBaseStructure['step']]
+        return False
 
     def getEventsForConfirmation(self):
         # Возвращает список событий, предложенныйх пользователями.
