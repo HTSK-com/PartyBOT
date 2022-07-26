@@ -23,6 +23,10 @@ class ModerationBot:
             await event.respond('Проверяю твой статус')
             sender = await event.get_sender()
             sender_ID = sender.id
+
+            self.changeStep(sender_ID, '')
+            self.changeOther(sender_ID, '')
+
             sender_status = self.checkUserStatus(sender_ID)
             await event.respond(f'Ваш статус ```{statusEncoding[sender_status]}```')
             await event.respond('Вам доступны следующие функции:\n' + "\n".join(permissionsByStatus[sender_status]))
@@ -42,19 +46,43 @@ class ModerationBot:
             # Добавить изменения step в базе данных, что бы показать, что пользователь перешел
             # на следующий шаг выполнения команды, а именно на отправку фото и текста
 
+        # Функция добавления нового модератора
+        @client.on(events.NewMessage(pattern='/addNewAdmin'))
+        async def addNewAdmin(event):
+            permission = ['sa']
+
+            sender = await event.get_sender()
+            sender_ID = sender.id
+            sender_status = self.checkUserStatus(sender_ID)
+
+            if sender_status not in permission:
+                await event.respond('Неподходящий уровень доступа')
+                return
+
+            self.changeStep(sender_ID, 'addNewAdmin 1')
+            await event.respond('Введите id пользовотеля')
+
         @client.on(events.NewMessage())
         async def unrecognisedMessage(event):
+            if event.raw_text[0] == '/':
+                return
+
             sender = await event.get_sender()
             sender_ID = sender.id
             step = self.getUserStep(sender_ID)
             if not step:
-                await event.respong('Ошибка')
+                await event.respond('Ошибка')
                 return
 
             scenario, step = str(step).split()
 
             if scenario == 'addNewAdmin':
-                pass
+                if step == '1':
+                    newModerTelegramID = event.raw_text
+                    self.changeStep(sender_ID, 'addNewAdmin 2')
+                    self.changeOther(sender_ID, newModerTelegramID)
+                    self.addNewModerator(newModerTelegramID)
+                    await event.respond('Выберите уровень доступа')
             elif scenario == 'publishEvent':
                 pass
             elif scenario == 'checkEvents':
@@ -80,6 +108,12 @@ class ModerationBot:
             return answer[ModerationDataBaseStructure['step']]
         return False
 
+    def changeStep(self, telegramID, step):
+        self.ModerationDB.editDataBase(telegramID, 'step', f'"{step}"')
+
+    def changeOther(self, telegramID, other):
+        self.ModerationDB.editDataBase(telegramID, 'other', f'"{other}"')
+
     def getEventsForConfirmation(self):
         # Возвращает список событий, предложенныйх пользователями.
         # Эти события надо будет подтвердить или отклонить
@@ -91,9 +125,9 @@ class ModerationBot:
         # Добавляет в бд информацию о новой тусовке
         pass
 
-    def addNewModerator(self, telegramID, status):
+    def addNewModerator(self, telegramID):
         # Дает(или измнеяет) права доступа для пользователя
-        pass
+        self.ModerationDB.newRecord(['telegramID'], [telegramID])
 
     def delModerator(self, telegramID):
         # Удаляет модератора

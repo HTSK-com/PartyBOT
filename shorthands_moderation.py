@@ -12,7 +12,8 @@ ModerationDataBaseStructure = {  # очередность колонок в mode
     'status': 1,
     'organisation': 2,
     'tgID': 3,
-    'step': 4
+    'step': 4,
+    'other': 5
 }
 
 permissionsByStatus = {

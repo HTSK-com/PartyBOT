@@ -13,8 +13,10 @@ class sqlHelper:
         return one_result
 
     def editDataBase(self, telegramID, param, value):  # Эту функцию необходимо проверить
-        self.cur.execute(f"INSERT INTO {self.table} VALUES({param}) WHERE telegramID={telegramID};", value)
+        # print(f"UPDATE INTO {self.table} ({param}) VALUES({value}) WHERE telegramID={telegramID};")
+        self.cur.execute(f"UPDATE {self.table} SET {param} = {value} WHERE telegramID={telegramID};")
         self.con.commit()
 
-
-
+    def newRecord(self, listOfNames, listOfValues):
+        self.cur.execute(f"INSERT INTO {self.table} ({', '.join(listOfNames)}) VALUES ({', '.join(listOfValues)});")
+        self.con.commit()
