@@ -1,5 +1,8 @@
 from telethon import TelegramClient, events, sync
 import configparser
+
+from telethon.tl.functions.users import GetFullUserRequest
+
 from sqlHelper import *
 from shorthands_moderation import *
 
@@ -78,11 +81,26 @@ class ModerationBot:
 
             if scenario == 'addNewAdmin':
                 if step == '1':
-                    newModerTelegramID = event.raw_text
+                    newModerTelegramName = event.raw_text
+                    newModerInf = await client(GetFullUserRequest(newModerTelegramName))
+                    newModerTelegramID = str(newModerInf.user.id)
+
                     self.changeStep(sender_ID, 'addNewAdmin 2')
                     self.changeOther(sender_ID, newModerTelegramID)
                     self.addNewModerator(newModerTelegramID)
+
                     await event.respond('Выберите уровень доступа')
+                elif step == '2':
+                    newAdminID = self.getUserOther(sender_ID)
+                    newAdminStatus = event.raw_text
+                    self.changeStatus(newAdminID, newAdminStatus)
+
+                    self.changeStep(sender_ID, '')
+                    self.changeOther(sender_ID, '')
+
+                    await event.respond(f'Отлично. Новый админ добавлен\n{newAdminID}\n'
+                                        f'{statusEncoding[newAdminStatus]}')
+
             elif scenario == 'publishEvent':
                 pass
             elif scenario == 'checkEvents':
@@ -107,6 +125,16 @@ class ModerationBot:
         if answer:
             return answer[ModerationDataBaseStructure['step']]
         return False
+
+    def getUserOther(self, telegramID):
+        # Возвращает этап на котором находится пользователь
+        answer = self.ModerationDB.getUserByTelegramID(telegramID)
+        if answer:
+            return answer[ModerationDataBaseStructure['other']]
+        return False
+
+    def changeStatus(self, telegramID, status):
+        self.ModerationDB.editDataBase(telegramID, 'status', f'"{status}"')
 
     def changeStep(self, telegramID, step):
         self.ModerationDB.editDataBase(telegramID, 'step', f'"{step}"')
