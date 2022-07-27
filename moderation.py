@@ -46,8 +46,8 @@ class ModerationBot:
             if sender_status not in permission:
                 await event.respond('Неподходящий уровень доступа')
 
-            # Добавить изменения step в базе данных, что бы показать, что пользователь перешел
-            # на следующий шаг выполнения команды, а именно на отправку фото и текста
+            self.changeStep(sender_ID, 'publishEvent 1')
+            await event.respond('Отправьте картинку афиши')
 
         # Функция добавления нового модератора
         @client.on(events.NewMessage(pattern='/addNewAdmin'))
@@ -102,7 +102,12 @@ class ModerationBot:
                                         f'{statusEncoding[newAdminStatus]}')
 
             elif scenario == 'publishEvent':
-                pass
+                if step == 1:
+                    pass
+                elif step == 2:
+                    pass
+                elif step == 3:
+                    pass
             elif scenario == 'checkEvents':
                 pass
 
