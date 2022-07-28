@@ -102,6 +102,7 @@ class ModerationBot:
 
             elif scenario == 'publishEvent':
                 if step == '1':  # Фото
+                    # Необходимо сделать инструмент для работы с бд events.db
                     path = await client.download_media(event.media, PATH_PHOTOS)
                     print(path)
                 elif step == '2':  # Описание
