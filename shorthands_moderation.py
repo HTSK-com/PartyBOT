@@ -28,3 +28,5 @@ programs = {
     # 3) Указать вручную дату
     'checkEvents': 2
 }
+
+PATH_PHOTOS = 'partyFiles\photos'

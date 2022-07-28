@@ -11,7 +11,7 @@ class MoscowEventsBot:
         bot_token = config['User_bot']['bot_token']
 
         client = TelegramClient('session_name', api_id, api_hash)
-        client.start(bot_token=bot_token)
+        client.start()
 
         @client.on(events.NewMessage(pattern='/start'))
         async def handler(event):

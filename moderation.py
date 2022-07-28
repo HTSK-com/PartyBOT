@@ -67,9 +67,8 @@ class ModerationBot:
 
         @client.on(events.NewMessage())
         async def unrecognisedMessage(event):
-            if event.raw_text[0] == '/':
+            if event.raw_text != '' and event.raw_text[0] == '/':
                 return
-
             sender = await event.get_sender()
             sender_ID = sender.id
             step = self.getUserStep(sender_ID)
@@ -102,11 +101,12 @@ class ModerationBot:
                                         f'{statusEncoding[newAdminStatus]}')
 
             elif scenario == 'publishEvent':
-                if step == 1:
+                if step == '1':  # Фото
+                    path = await client.download_media(event.media, PATH_PHOTOS)
+                    print(path)
+                elif step == '2':  # Описание
                     pass
-                elif step == 2:
-                    pass
-                elif step == 3:
+                elif step == '3':  # Дата
                     pass
             elif scenario == 'checkEvents':
                 pass
