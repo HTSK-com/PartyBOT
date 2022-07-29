@@ -12,9 +12,8 @@ class sqlHelper:
         one_result = self.cur.fetchone()
         return one_result
 
-    def editDataBase(self, telegramID, param, value):  # Эту функцию необходимо проверить
-        # print(f"UPDATE INTO {self.table} ({param}) VALUES({value}) WHERE telegramID={telegramID};")
-        self.cur.execute(f"UPDATE {self.table} SET {param} = {value} WHERE telegramID={telegramID};")
+    def editDataBase(self, conditionParam, param, value, condition='telegramID'):  # Эту функцию необходимо проверить
+        self.cur.execute(f"UPDATE {self.table} SET {param} = {value} WHERE {condition}={conditionParam};")
         self.con.commit()
 
     def newRecord(self, listOfNames, listOfValues):

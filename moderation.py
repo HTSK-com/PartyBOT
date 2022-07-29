@@ -16,6 +16,7 @@ class ModerationBot:
         bot_token = config['Moderation']['bot_token']
 
         self.ModerationDB = sqlHelper('moderators.db', 'moderators')
+        self.EventsDB = sqlHelper('events.db', 'events')
 
         client = TelegramClient('session_name', api_id, api_hash)
         client.start()
@@ -104,11 +105,36 @@ class ModerationBot:
                 if step == '1':  # Фото
                     # Необходимо сделать инструмент для работы с бд events.db
                     path = await client.download_media(event.media, PATH_PHOTOS)
-                    print(path)
+                    filename = path.rstrip('.jpg').lstrip(PATH_PHOTOS)
+
+                    self.uploadNewEvent(filename)
+                    self.changeOther(sender_ID, filename)
+                    self.changeStep(sender_ID, 'publishEvent 2')
+
+                    await event.respond('Картинка успешно добавлена. Отправьте описание')
+
                 elif step == '2':  # Описание
-                    pass
+                    eventDescription = event.raw_text
+                    filename = self.getUserOther(sender_ID)
+
+                    file = open(PATH_DESCRIPTIONS + 'desc' + filename, 'wt', encoding='utf-8')
+                    file.write(eventDescription)
+                    file.close()
+
+                    self.changeStep(sender_ID, 'publishEvent 3')
+
+                    await event.respond('Теперь отправьте дату в формате дд/мм/гггг')
+
                 elif step == '3':  # Дата
-                    pass
+                    filename = self.getUserOther(sender_ID)
+                    date = event.raw_text
+                    self.changeDateInEvent(filename, date)
+
+                    self.changeStep(sender_ID, '')
+                    self.changeOther(sender_ID, '')
+
+                    event.respond('Новвя тусовка успешно добавлена')
+
             elif scenario == 'checkEvents':
                 pass
 
@@ -148,6 +174,9 @@ class ModerationBot:
     def changeOther(self, telegramID, other):
         self.ModerationDB.editDataBase(telegramID, 'other', f'"{other}"')
 
+    def changeDateInEvent(self, filename, date):
+        self.EventsDB.editDataBase(f'"{filename}"', 'date', f'"{date}"', 'filename')
+
     def getEventsForConfirmation(self):
         # Возвращает список событий, предложенныйх пользователями.
         # Эти события надо будет подтвердить или отклонить
@@ -155,9 +184,9 @@ class ModerationBot:
         self.uploadNewEvent()  # После подтвержения, событие удаляется из бд, и вновь добавляется уже как новое
         pass
 
-    def uploadNewEvent(self):
+    def uploadNewEvent(self, filename):
         # Добавляет в бд информацию о новой тусовке
-        pass
+        self.EventsDB.newRecord(['filename'], [f'"{filename}"'])
 
     def addNewModerator(self, telegramID):
         # Дает(или измнеяет) права доступа для пользователя

@@ -29,4 +29,5 @@ programs = {
     'checkEvents': 2
 }
 
-PATH_PHOTOS = 'partyFiles\photos'
+PATH_PHOTOS = 'partyFiles\photos/'
+PATH_DESCRIPTIONS = 'partyFiles\descriptions/'
